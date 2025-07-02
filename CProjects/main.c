@@ -1,177 +1,176 @@
-// µµ¼­°ü ´ëÃâ ÇÁ·Î±×·¥
+/*
+    ********************
+    µµ¼­°ü ´ëÃâ ÇÁ·Î±×·¥
+    ********************
+
+    ¿©¸§¹æÇÐ ÇÁ·ÎÁ§Æ®
+*/
 
 #define _CRT_SECURE_NO_WARNINGS
-
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> //
 #include <string.h>
-#include <windows.h> // gotoxy, setColor »ç¿ë
+#include <windows.h> //
 
 #define MAX_MEMBERS 100
 
-typedef struct {
+typedef struct
+{
     char phone[20];
     char password[20];
-} Member;
+}Member;
 
 Member members[MAX_MEMBERS];
 int memberCount = 0;
 
-// ÄÜ¼Ö Ä¿¼­ ÀÌµ¿
-void gotoxy(int x, int y) {
-    COORD Pos = { x, y };
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Pos);
+void xy(int x, int y);
+void setColor(int color);
+void loadMembers();
+void drawMenu();
+int login();
+void signUp(); // È¸¿ø°¡ÀÔ
+
+int main()
+{
+    char menuInput[10];
+    int choice = 0;
+
+    loadMembers();
+
+    while (1)
+    {
+        drawMenu();
+        fgets(menuInput, sizeof(menuInput), stdin);
+        choice = atoi(menuInput);
+
+        if (choice == 1)
+        {
+            if (login())
+            {
+                break;
+            }
+        }
+        else if (choice == 2)
+        {
+            signUp();
+        }
+        else if (choice == 3)
+        {
+            break;
+        }
+        else
+        {
+            printf("Àß¸øµÈ ÀÔ·ÂÀÔ´Ï´Ù.\n");
+            system("pause");
+        }
+    }
+
+    return 0;
 }
 
-// ÅØ½ºÆ® »ö»ó ¼³Á¤
-void setColor(int color) {
+void xy(int x, int y)
+{
+    COORD XY = { x, y };
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), XY);
+}
+
+void setColor(int color)
+{
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
 }
 
-// È¸¿ø Á¤º¸ ÆÄÀÏ¿¡¼­ ºÒ·¯¿À±â
-void loadMembers() {
+void loadMembers()
+{
     FILE* file = fopen("member.txt", "r");
-    if (file == NULL) {
+    if (file == NULL)
+    {
         printf("È¸¿ø ÆÄÀÏÀ» ºÒ·¯¿Ã ¼ö ¾ø½À´Ï´Ù.\n");
         return;
     }
 
-    while (fscanf(file, "%s %s", members[memberCount].phone, members[memberCount].password) == 2) {
+    while (fscanf(file, "%s %s", members[memberCount].phone, members[memberCount].password) == 2)
+    {
         memberCount++;
     }
 
     fclose(file);
 }
 
-// ¸ÞÀÎ ¸Þ´º UI
-void drawMainMenu() {
+void drawMenu()
+{
     system("cls");
-    setColor(10); // ÃÊ·Ï»ö
+    setColor(10);
 
-    gotoxy(3, 0); printf("¦£¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¤");
-    gotoxy(3, 1); printf("¦¢");
-    gotoxy(3, 2); printf("¦¢");
-    gotoxy(3, 3); printf("¦¢");
-    gotoxy(3, 4); printf("¦¢");
-    gotoxy(3, 5); printf("¦¢");
-    gotoxy(3, 6); printf("¦¢");
-    gotoxy(3, 7); printf("¦¢");
-    gotoxy(3, 8); printf("¦¢");
-    gotoxy(3, 9); printf("¦¢");
-    gotoxy(3, 10); printf("¦¢");
-    gotoxy(3, 11); printf("¦¢");
-    gotoxy(3, 12); printf("¦¢");
-    gotoxy(3, 13); printf("¦¢");
-    gotoxy(3, 14); printf("¦¢");
-    gotoxy(3, 15); printf("¦¦¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¥");
+    xy(3, 0); printf("¦£¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¤");
+    for (int i = 1; i <= 14; i++)
+    {
+        xy(3, i); printf("¦¢");
+        xy(47, i); printf("¦¢");
+    }
+    xy(3, 15); printf("¦¦¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¥");
 
-    gotoxy(48, 1); printf("¦¢");
-    gotoxy(48, 2); printf("¦¢");
-    gotoxy(48, 8); printf("¦¢");
-    gotoxy(48, 9); printf("¦¢");
-    gotoxy(48, 10); printf("¦¢");
-    gotoxy(48, 11); printf("¦¢");
-    gotoxy(48, 12); printf("¦¢");
-    gotoxy(48, 13); printf("¦¢");
-    gotoxy(48, 14); printf("¦¢");
+    xy(10, 3); printf("¦£¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¤       ¦¢");
+    xy(10, 4); printf("¦¢        µµ¼­°ü ½Ã½ºÅÛ       ¦¢       ¦¢");
+    xy(10, 5); printf("¦¦¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¥       ¦¢");
+    xy(10, 6); printf("  1. ·Î±×ÀÎ                          ¦¢");
+    xy(10, 7); printf("  2. È¸¿ø°¡ÀÔ                        ¦¢");
+    xy(10, 8); printf("  3. Á¾·á                            ¦¢");
+    xy(10, 10); printf("  ¸Þ´º ÀÔ·Â : ");
 
-    gotoxy(10, 3); printf("¦£¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¤        ¦¢");
-    gotoxy(10, 4); printf("¦¢        µµ¼­°ü ½Ã½ºÅÛ       ¦¢        ¦¢");
-    gotoxy(10, 5); printf("¦¦¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¥        ¦¢");
-    gotoxy(10, 6); printf("  1. ·Î±×ÀÎ                           ¦¢");
-    gotoxy(10, 7); printf("  2. Á¾·á                             ¦¢");
-    gotoxy(10, 9); printf("  ¸Þ´º ÀÔ·Â : ");
-
-    setColor(7); // ±âº» »ö»ó
+    setColor(7);
 }
 
-// ·Î±×ÀÎ ±â´É
-int login() {
+int login()
+{
     char phone[20], password[20];
 
     system("cls");
-    setColor(11); // ¹àÀº ÆÄ¶û
-    gotoxy(3, 0); printf("¦£¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¤");
-    gotoxy(3, 1); printf("¦¢");
-    gotoxy(3, 2); printf("¦¢");
-    gotoxy(3, 3); printf("¦¢");
-    gotoxy(3, 4); printf("¦¢");
-    gotoxy(3, 5); printf("¦¢");
-    gotoxy(3, 6); printf("¦¢");
-    gotoxy(3, 7); printf("¦¢");
-    gotoxy(3, 8); printf("¦¢");
-    gotoxy(3, 9); printf("¦¢");
-    gotoxy(3, 10); printf("¦¢");
-    gotoxy(3, 11); printf("¦¢");
-    gotoxy(3, 12); printf("¦¢");
-    gotoxy(3, 13); printf("¦¢");
-    gotoxy(3, 14); printf("¦¢");
-    gotoxy(3, 15); printf("¦¦¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¥");
+    setColor(11);
 
-    gotoxy(48, 1); printf("¦¢");
-    gotoxy(48, 2); printf("¦¢");
-    gotoxy(48, 8); printf("¦¢");
-    gotoxy(48, 9); printf("¦¢");
-    gotoxy(48, 10); printf("¦¢");
-    gotoxy(48, 11); printf("¦¢");
-    gotoxy(48, 12); printf("¦¢");
-    gotoxy(48, 13); printf("¦¢");
-    gotoxy(48, 14); printf("¦¢");
-
-    gotoxy(10, 3); printf("¦£¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¤        ¦¢");
-    gotoxy(10, 4); printf("¦¢        µµ¼­°ü ·Î±×ÀÎ       ¦¢        ¦¢");
-    gotoxy(10, 5); printf("¦¦¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¥        ¦¢");
-
-    gotoxy(48, 6); printf("¦¢");
-    gotoxy(48, 7); printf("¦¢");
+    // ui ±×¸®±â
+    xy(3, 0); printf("¦£¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¤");
+    for (int i = 1; i <= 14; i++)
+    {
+        xy(3, i); printf("¦¢");
+        xy(47, i); printf("¦¢");
+    }
+    xy(3, 15); printf("¦¦¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¥");
+    xy(10, 3); printf("¦£¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¤       ¦¢");
+    xy(10, 4); printf("¦¢        µµ¼­°ü ·Î±×ÀÎ       ¦¢       ¦¢");
+    xy(10, 5); printf("¦¦¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¥       ¦¢");
 
     setColor(7);
 
-    gotoxy(10, 6); printf("ÀüÈ­¹øÈ£ ÀÔ·Â");
-    gotoxy(10, 7); printf("[ex) 010-xxxx-xxxx] : ");
+    xy(10, 6); printf("ÀüÈ­¹øÈ£ ÀÔ·Â");
+    xy(10, 7); printf("[ex) 010-xxxx-xxxx] : ");
     fgets(phone, sizeof(phone), stdin);
     phone[strcspn(phone, "\n")] = 0;
 
-    gotoxy(10, 8); printf("ºñ¹Ð¹øÈ£ [¼ýÀÚ 4°³ + !] : ");
+    xy(10, 8); printf("ºñ¹Ð¹øÈ£ [¼ýÀÚ 4°³ + !] : ");
     fgets(password, sizeof(password), stdin);
     password[strcspn(password, "\n")] = 0;
 
     for (int i = 0; i < memberCount; i++)
     {
-        if (strcmp(members[i].phone, phone) == 0 && strcmp(members[i].password, password) == 0) {
+        if (strcmp(members[i].phone, phone) == 0 && strcmp(members[i].password, password) == 0)
+        {
             system("cls");
             setColor(10);
-            gotoxy(3, 0); printf("¦£¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¤");
-            gotoxy(3, 1); printf("¦¢");
-            gotoxy(3, 2); printf("¦¢");
-            gotoxy(3, 3); printf("¦¢");
-            gotoxy(3, 4); printf("¦¢");
-            gotoxy(3, 5); printf("¦¢");
-            gotoxy(3, 6); printf("¦¢");
-            gotoxy(3, 7); printf("¦¢");
-            gotoxy(3, 8); printf("¦¢");
-            gotoxy(3, 9); printf("¦¢");
-            gotoxy(3, 10); printf("¦¢");
-            gotoxy(3, 11); printf("¦¢");
-            gotoxy(3, 12); printf("¦¢");
-            gotoxy(3, 13); printf("¦¢");
-            gotoxy(3, 14); printf("¦¢");
-            gotoxy(3, 15); printf("¦¦¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¥");
 
-            gotoxy(48, 1); printf("¦¢");
-            gotoxy(48, 2); printf("¦¢");
-            gotoxy(48, 8); printf("¦¢");
-            gotoxy(48, 9); printf("¦¢");
-            gotoxy(48, 10); printf("¦¢");
-            gotoxy(48, 11); printf("¦¢");
-            gotoxy(48, 12); printf("¦¢");
-            gotoxy(48, 13); printf("¦¢");
-            gotoxy(48, 14); printf("¦¢");
+            // ui ±×¸®±â
+            xy(3, 0); printf("¦£¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¤");
+            for (int j = 1; j <= 14; j++)
+            {
+                xy(3, j); printf("¦¢");
+                xy(47, j); printf("¦¢");
+            }
+            xy(3, 15); printf("¦¦¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¥");
+            xy(10, 3); printf("¦£¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¤       ¦¢");
+            xy(10, 4); printf("¦¢        µµ¼­°ü ½Ã½ºÅÛ       ¦¢       ¦¢");
+            xy(10, 5); printf("¦¦¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¥       ¦¢");
 
-            gotoxy(10, 3); printf("¦£¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¤        ¦¢");
-            gotoxy(10, 4); printf("¦¢        µµ¼­°ü ½Ã½ºÅÛ       ¦¢        ¦¢");
-            gotoxy(10, 5); printf("¦¦¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¥        ¦¢");
-            gotoxy(10, 6); printf("·Î±×ÀÎ ¼º°ø! È¯¿µÇÕ´Ï´Ù.\n");
+            xy(10, 6); printf("·Î±×ÀÎ ¼º°ø! È¯¿µÇÕ´Ï´Ù.\n");
+
             setColor(7);
             system("pause");
             return 1;
@@ -179,37 +178,75 @@ int login() {
     }
 
     setColor(12);
-    gotoxy(10, 9); printf("·Î±×ÀÎ ½ÇÆÐ: ÀüÈ­¹øÈ£ ¶Ç´Â ºñ¹Ð¹øÈ£°¡ Æ²·È½À´Ï´Ù.\n");
+    xy(10, 9); printf("·Î±×ÀÎ ½ÇÆÐ: ÀüÈ­¹øÈ£ ¶Ç´Â ºñ¹Ð¹øÈ£°¡ Æ²·È½À´Ï´Ù.\n");
     setColor(7);
+
     system("pause");
     return 0;
 }
 
-int main() 
-{
-    char menuInput[10];
-    int choice = 0;
+void signUp() {
+    char phone[20], password[20];
 
-    loadMembers();  // ÆÄÀÏ¿¡¼­ È¸¿ø Á¤º¸ ºÒ·¯¿À±â
+    system("cls");
+    setColor(11);
 
-    while (1) {
-        drawMainMenu();
-        fgets(menuInput, sizeof(menuInput), stdin);
-        choice = atoi(menuInput);  // ¹®ÀÚ¿­À» Á¤¼ö·Î º¯È¯
+    // ui ±×¸®±â
+    xy(3, 0); printf("¦£¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¤");
+    for (int i = 1; i <= 14; i++)
+    {
+        xy(3, i); printf("¦¢");
+        xy(47, i); printf("¦¢");
+    }
+    xy(3, 15); printf("¦¦¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¥");
+    xy(10, 3); printf("¦£¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¤       ¦¢");
+    xy(10, 4); printf("¦¢        È¸¿ø°¡ÀÔ È­¸é       ¦¢       ¦¢");
+    xy(10, 5); printf("¦¦¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¥       ¦¢");
 
-        if (choice == 1) {
-            if (login()) {
-                break; // ·Î±×ÀÎ ¼º°ø
-            }
-        }
-        else if (choice == 2) {
-            break;
-        }
-        else {
-            printf("Àß¸øµÈ ÀÔ·ÂÀÔ´Ï´Ù.\n");
+    xy(10, 6); printf("ÀüÈ­¹øÈ£ ÀÔ·Â");
+    xy(10, 7); printf("[ex: 010-1234-5678] : ");
+    fgets(phone, sizeof(phone), stdin);
+    phone[strcspn(phone, "\n")] = 0;
+
+    for (int i = 0; i < memberCount; i++)
+    {
+        if (strcmp(members[i].phone, phone) == 0)
+        {
+            setColor(12);
+            xy(10, 8); printf("ÀÌ¹Ì µî·ÏµÈ ÀüÈ­¹øÈ£ÀÔ´Ï´Ù.\n");
+            setColor(7);
             system("pause");
+            return;
         }
     }
 
-    return 0;
+    xy(10, 9); printf("ºñ¹Ð¹øÈ£ ÀÔ·Â");
+    xy(10, 10); printf("[¼ýÀÚ 4ÀÚ¸® + !] : ");
+    fgets(password, sizeof(password), stdin);
+    password[strcspn(password, "\n")] = 0;
+
+    strcpy(members[memberCount].phone, phone);
+    strcpy(members[memberCount].password, password);
+    memberCount++;
+
+    FILE* file = fopen("member.txt", "a");
+
+    if (file == NULL)
+    {
+        setColor(12);
+        xy(10, 12); printf("È¸¿ø ÆÄÀÏ ÀúÀå ½ÇÆÐ\n");
+        setColor(7);
+
+        system("pause");
+        return;
+    }
+
+    fprintf(file, "%s %s\n", phone, password);
+    fclose(file);
+
+    setColor(10);
+    xy(10, 12); printf("È¸¿ø°¡ÀÔ ¿Ï·á\n");
+    setColor(7);
+
+    system("pause");
 }

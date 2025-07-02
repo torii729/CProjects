@@ -1,6 +1,7 @@
 // 2025.07.02. 구조체 배열과 파일 입출력 사용
 
 #define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -23,8 +24,8 @@ int main()
 {
 	// 구조체 배열
 	USER users[] = {
-		{"ㄹㅇ", "010", "qlalf"},
-		{"ㅁㄹ", "123", "번호"}
+		{"기민", "010-1111-1111", "qwer!"},
+		{"강기", "010-9999-9999", "1234!"}
 	};
 
 	// 함수 호출
@@ -62,7 +63,7 @@ void fileLoad()
 		return;
 	}
 
-	USER temp; // 파일에서 한 줄씩 데이터를 임시로 받아올 공간이 필요해서 선언
+	USER temp; // 파일에서 데이터를 한 줄씩 임시로 받아올 공간이 필요해서 선언
 	printf("파일에서 불러온 정보입니다\n");
 
 	while (fscanf(test, "%s %s %s", temp.Name, temp.Phone, temp.Pw) == 3)
