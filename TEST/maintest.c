@@ -1,6 +1,7 @@
 // 2025.07.02. 구조체 배열과 파일 입출력 사용
 
 #define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
 #include <stdlib.h>
 
