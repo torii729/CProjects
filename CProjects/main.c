@@ -54,33 +54,46 @@ typedef struct
     전역 변수 선언
 */
 Member members[MAX_MEMBERS];
-int memberCount = 0; // 현재 등록된 회원 수
 char currentUser[20]; // 현재 로그인한 사용자 이름 저장용
 
 /*
     함수 선언부
 */
-void gotoxy(int x, int y); // 콘솔 커서 이동 함수
+void gotoxy(int x, int y); // 콘솔 커서 이동 함수 (xy 좌표)
 void setColor(int color); // 콘솔 글자 색상 변경 함수
-void loadMembers(); // 회원 정보 파일에서 불러오기
 void drawMainMenu(); // 초기 메인 메뉴 UI 출력 함수
+void drawBox(int x, int y, int w, int h, const char text[]); // 사각형 박스 그리기 함수
+void drawUserMenu(); // 로그인 후 사용자 메인 메뉴 함수
+
+int mainLogin(); // 메인 화면 (맨처음 화면)
 int login(); // 로그인 기능 함수
 void signUp(); // 회원가입 기능 함수
-void drawBox(int x, int y, int w, int h); // 사각형 박스 그리기 함수
-void drawTitleBox(int x, int y, const char* text); // 제목 상자 출력 함수
-void drawUserMenu(); // 로그인 후 사용자 메인 메뉴 함수
+
+void handleBorrow(); // 도서 대출
+void handleReturn(); // 도서 반납
+void showBookList(); // 목록 보기
+void searchBook(); // 도서 검색
+void viewBorrowHistory(); // 대출 내역
+
 
 /*
     메인 함수
 */
 int main()
 {
+    mainLogin();
+    return 0;
+}
+
+/*
+    메인 화면 (맨처음 화면)
+*/
+int mainLogin()
+{
     int choice;
     char input[10];
 
-    loadMembers(); // 프로그램 실행 시 회원 정보 먼저 불러오기
-
-    while (1)
+    while (1)  // 무한 반복 (예시 : 회원가입 완료하고 여기로 다시 돌아와야 함, 반복하지 않으면 회원가입 완료 시 프로그램이 종료됨)
     {
         drawMainMenu(); // 메인 화면 출력
 
@@ -89,25 +102,24 @@ int main()
         fgets(input, sizeof(input), stdin);
         choice = atoi(input);
 
-        if (choice == 1)
+        switch (choice)
         {
-            if (login())
-            {
+        case 1 :
+            if (login()) // 로그인 실행
                 drawUserMenu(); // 로그인 성공 시 사용자 메뉴 이동
-            }
-        }
-        else if (choice == 2)
-        {
-            signUp(); // 회원가입 이동
-        }
-        else if (choice == 3)
-        {
-            break; // 종료
-        }
-        else
-        {
-            gotoxy(13, 22); setColor(12);
-            printf("잘못된 입력입니다. 다시 선택해주세요.");
+            break;
+
+        case 2 :
+            signUp(); // 회원가입 실행
+            break;
+
+        case 3 :
+            return 0; // 종료
+        
+        default :
+            gotoxy(13, 22);
+            setColor(12);
+            printf("잘못된 입력입니다. 다시 입력해주세요.");
             setColor(7);
             system("pause");
         }
@@ -133,57 +145,45 @@ void setColor(int color)
 }
 
 /*
-    회원 정보를 파일에서 불러오는 함수
-*/
-void loadMembers()
-{
-    FILE* file = fopen("member.txt", "r");
-    if (file == NULL) return;
-
-    while (fscanf(file, "%s %s %s",
-        members[memberCount].name,
-        members[memberCount].phone,
-        members[memberCount].password) == 3)
-    {
-        memberCount++;
-    }
-    fclose(file);
-}
-
-/*
-    제목 박스 그리기
-*/
-void drawTitleBox(int x, int y, const char* text)
-{
-    gotoxy(x, y);     printf("┌─────────────────────────┐");
-    gotoxy(x, y + 1); printf("│   %s  │", text); // 텍스트 가운데 배치
-    gotoxy(x, y + 2); printf("└─────────────────────────┘");
-}
-
-/*
     사각형 박스 출력 함수
 */
-void drawBox(int x, int y, int w, int h)
+void drawBox(int x, int y, int width, int height, const char text[])
 {
+    // 상단
     gotoxy(x, y); printf("┌");
-    for (int i = 0; i < w - 2; i++)
+    for (int i = 0; i < width - 2; i++)
     {
         printf("─");
     }
     printf("┐");
 
-    for (int i = 1; i < h - 1; i++)
+    // 중간
+    for (int i = 1; i < height - 1; i++) 
     {
         gotoxy(x, y + i); printf("│");
-        gotoxy(x + w - 1, y + i); printf("│");
+        for (int j = 0; j < width - 2; j++)
+        {
+            printf(" ");
+        }
+        printf("│");
     }
 
-    gotoxy(x, y + h - 1); printf("└");
-    for (int i = 0; i < w - 2; i++)
+    // 하단
+    gotoxy(x, y + height - 1); printf("└");
+    for (int i = 0; i < width - 2; i++)
     {
         printf("─");
     }
     printf("┘");
+
+    // 텍스트 출력 (중앙 정렬)
+    if (text != NULL)
+    {
+        int textX = x + (width - (int)strlen(text)) / 2;
+        int textY = y + 1;
+        gotoxy(textX, textY);
+        printf("%s", text);
+    }
 }
 
 /*
@@ -194,18 +194,17 @@ void drawMainMenu()
     system("cls");
     setColor(7);
 
-    drawBox(10, 2, 40, 22); // 전체 메인 박스
-    drawTitleBox(17, 4, "도서관 대출 프로그램"); // 제목 상자
+    drawBox(10, 2, 40, 3, "도서관 대출 프로그램"); // 전체 메인 박스
+    drawBox(10, 5, 40, 19, "");
 
-    drawBox(22, 8, 16, 3); // 로그인 버튼 박스
-    gotoxy(25, 9); printf("1. 로그인");
+    drawBox(22, 8, 16, 3, " 1. 로그인"); // 로그인 버튼 박스
+   // gotoxy(25, 9); printf("1. 로그인");
 
-    drawBox(22, 12, 16, 3); // 회원가입 버튼 박스
-    gotoxy(25, 13); printf("2. 회원가입");
+    drawBox(22, 12, 16, 3, " 2. 회원가입"); // 회원가입 버튼 박스
+    // gotoxy(25, 13); printf("2. 회원가입");
 
     setColor(12);
-    drawBox(22, 16, 16, 3); // 종료 버튼 박스
-    gotoxy(25, 17); printf("3. 종료");
+    drawBox(22, 16, 16, 3, " 3. 종료"); // 종료 버튼 박스
     setColor(7);
 
     // 번호 입력 칸 상단 구분 선
@@ -221,11 +220,24 @@ void drawMainMenu()
 int login()
 {
     char name[20], phone[20], password[20];
+    char fileName[20], filePhone[20], filePassword[20];
+
+    FILE* file = fopen("member.txt", "r");
+    if (file == NULL)
+    {
+        gotoxy(14, 19);
+        setColor(12);
+        printf("회원 데이터 파일이 없습니다.");
+        setColor(7);
+        system("pause");
+        return 0;
+    }
+
     system("cls");
 
-    drawBox(10, 2, 40, 22);
-    drawTitleBox(17, 3, "   사용자 로그인    ");
-    drawBox(12, 6, 36, 17);
+    drawBox(10, 2, 40, 3, "사용자 로그인");
+    drawBox(10, 5, 40, 19, "");
+    drawBox(12, 6, 36, 17, "");
 
     gotoxy(14, 7); printf("이름        : ");
     fgets(name, sizeof(name), stdin);
@@ -239,29 +251,83 @@ int login()
     fgets(password, sizeof(password), stdin);
     password[strcspn(password, "\n")] = 0;
 
-    for (int i = 0; i < memberCount; i++)
+    int check = 0;
+
+    while (fscanf(file, "%s %s %s", fileName, filePhone, filePassword) == 3)
     {
-        if (strcmp(members[i].name, name) == 0 &&
-            strcmp(members[i].phone, phone) == 0 &&
-            strcmp(members[i].password, password) == 0)
+        if (strcmp(name, fileName) == 0 &&
+            strcmp(phone, filePhone) == 0 &&
+            strcmp(password, filePassword) == 0)
         {
-            strcpy(currentUser, name); // 로그인 성공 시 사용자 이름 저장("~~님 환영합니다!" 문구의 "~~" 때문에)
-            return 1;
+            check = 1; 
+            break;
         }
     }
-    gotoxy(14, 19); setColor(12);
-    printf("로그인 실패: 정보가 일치하지 않습니다.\n");
-    setColor(7);
-    system("pause");
-    return 0;
+
+    fclose(file);
+
+    if (check)
+    {
+        strcpy(currentUser, name);
+        return 1;
+    }
+    else
+    {
+        gotoxy(14, 19);
+        setColor(12);
+        printf("로그인 실패: 정보가 일치하지 않습니다.\n");
+        setColor(7);
+        system("pause");
+        return 0;
+    }
 }
+
 
 /*
     회원가입 기능
 */
 void signUp()
 {
-    return 0;
+    char name[20], phone[20], password[20];
+
+    system("cls");
+
+    drawBox(10, 2, 40, 3, "회원가입");
+    drawBox(10, 5, 40, 19, "");
+    drawBox(12, 6, 36, 17, "");
+
+    gotoxy(14, 7);  printf("이름        : ");
+    fgets(name, sizeof(name), stdin);
+    name[strcspn(name, "\n")] = 0;
+
+    gotoxy(14, 11); printf("전화번호    : ");
+    fgets(phone, sizeof(phone), stdin);
+    phone[strcspn(phone, "\n")] = 0;
+
+    gotoxy(14, 15); printf("비밀번호    : ");
+    fgets(password, sizeof(password), stdin);
+    password[strcspn(password, "\n")] = 0;
+
+    FILE* file = fopen("member.txt", "a");
+
+    if (file == NULL)
+    {
+        gotoxy(14, 19);
+        setColor(12);
+        printf("회원 정보 저장 실패");
+        setColor(7);
+        system("pause");
+        return;
+    }
+
+    fprintf(file, "\n%s %s %s", name, phone, password);
+    fclose(file);
+
+    gotoxy(14, 19);
+    setColor(10);
+    printf("회원가입 완료");
+    setColor(7);
+    system("pause");
 }
 
 /*
@@ -270,48 +336,48 @@ void signUp()
 void drawUserMenu()
 {
     char welcome[60];
-    int choice;
     char input[10];
+    int choice;
 
     system("cls");
     setColor(7);
 
-    drawBox(10, 2, 40, 22); // 전체 메인 박스
-    drawTitleBox(17, 4, "도서관 대출 프로그램"); // 제목 상자
+    drawBox(10, 2, 40, 3, "도서관 대출 프로그램"); // 전체 메인 박스
+    drawBox(10, 5, 40, 19, "");
 
     sprintf(welcome, "    %s 님, 환영합니다!", currentUser);
     setColor(10);
-    gotoxy(17, 7); printf("%s", welcome);
+    gotoxy(17, 6); printf("%s", welcome);
     setColor(7);
 
     setColor(3);
-    drawBox(14, 8, 16, 5); // 도서 대출
+    drawBox(14, 8, 16, 5, ""); // 도서 대출
     gotoxy(16, 10); printf("1. 도서 대출");
-
-    drawBox(31, 8, 16, 5); // 도서 반납
+ 
+    drawBox(31, 8, 16, 5, ""); // 도서 반납
     gotoxy(33, 10); printf("2. 도서 반납");
     setColor(7);
 
     setColor(8);
-    drawBox(14, 13, 11, 5); // 도서 목록
+    drawBox(14, 13, 11, 5, ""); // 도서 목록
     gotoxy(16, 15); printf("3. 목록");
 
-    drawBox(25, 13, 11, 5); // 도서 검색
+    drawBox(25, 13, 11, 5, ""); // 도서 검색
     gotoxy(27, 15); printf("4. 검색");
 
-    drawBox(36, 13, 11, 5); // 대출 내역
+    drawBox(36, 13, 11, 5, ""); // 대출 내역
     gotoxy(38, 15); printf("5. 내역");
     setColor(7);
 
     setColor(12);
-    drawBox(25, 18, 11, 3); // 종료
-    gotoxy(27, 19); printf("6. 종료");
+    drawBox(23, 18, 15, 3, ""); // 뒤로가기
+    gotoxy(25, 19); printf("6. 뒤로 가기");
     setColor(7);
 
     // 번호 입력 칸 상단 구분 선
     gotoxy(10, 21); printf("├──────────────────────────────────────┤");
 
-    // 번호 입력 문구 출력
+    // 번호 입력 문구
     gotoxy(13, 22); printf("번호 입력 : ");
 
     fgets(input, sizeof(input), stdin);
@@ -320,7 +386,60 @@ void drawUserMenu()
     // 하단 테두리
     gotoxy(10, 23); printf("└──────────────────────────────────────┘");
 
+    switch (choice)
+    {
+    case 1:
+        handleBorrow();
+    case 2:
+        handleReturn();
+    case 3:
+        showBookList();
+    case 4:
+        searchBook();
+    case 5:
+        viewBorrowHistory();
+    case 6:
+        mainLogin();
+    default:
+        gotoxy(13, 22); setColor(12);
+        printf("잘못된 입력입니다 . 다시 입력해주세요.");
+        setColor(7);
+        system("pause");
+    }
+}
 
+// 미구현 함수들
+void handleBorrow()
+{
+    system("cls");
+    drawBox(10, 2, 40, 22, "");
+    system("pause");
+}
 
-    // 이후 기능 추가 예정임
+void handleReturn()
+{
+    system("cls");
+    drawBox(10, 2, 40, 22, "");
+    system("pause");
+}
+
+void showBookList()
+{
+    system("cls");
+    drawBox(10, 2, 40, 22, "");
+    system("pause");
+}
+
+void searchBook()
+{
+    system("cls");
+    drawBox(10, 2, 40, 22, "");
+    system("pause");
+}
+
+void viewBorrowHistory()
+{
+    system("cls");
+    drawBox(10, 2, 40, 22, "");
+    system("pause");
 }
