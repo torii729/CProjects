@@ -9,7 +9,8 @@
 
 char books[TOTAL_BOOKS][50]; // 책 제목 저장
 
-void drawPage(int page) {
+void drawPage(int page) 
+{
     system("cls");
     printf("┌─────────────────────┐\n");
     printf("│      도서 대출       │\n");
