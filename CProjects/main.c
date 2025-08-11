@@ -1404,15 +1404,15 @@ void addBook()
     }
     else if (input[0] == '1')
     {
-        gotoxy(14, 7);  printf("제목        : ");
+        gotoxy(33, 7);  printf("제목        : ");
         fgets(newbook.bookTitle, sizeof(newbook.bookTitle), stdin); // 엔터까지 입력받음
         newbook.bookTitle[strcspn(newbook.bookTitle, "\n")] = 0; // \n 제거
 
-        gotoxy(14, 11); printf("저자        : ");
+        gotoxy(33, 11); printf("저자        : ");
         fgets(newbook.bookAuthor, sizeof(newbook.bookAuthor), stdin);
         newbook.bookAuthor[strcspn(newbook.bookAuthor, "\n")] = 0;
 
-        gotoxy(14, 15); printf("출판사      : ");
+        gotoxy(33, 15); printf("출판사      : ");
         fgets(newbook.bookPublish, sizeof(newbook.bookPublish), stdin);
         newbook.bookPublish[strcspn(newbook.bookPublish, "\n")] = 0;
 
