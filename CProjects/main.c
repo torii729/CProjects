@@ -536,7 +536,7 @@ int userMenu()
 
         setColor(12);
         drawBox(53, 18, 15, 3, ""); // 뒤로가기
-        gotoxy(55, 19); printf("6. 뒤로 가기");
+        gotoxy(55, 19); printf("6. 로그아웃");
         setColor(7);
 
         gotoxy(40, 21); printf("├──────────────────────────────────────┤");
@@ -614,7 +614,7 @@ int adminMenu()
 
         setColor(12);
         drawBox(53, 18, 15, 3, ""); // 뒤로가기
-        gotoxy(55, 19); printf("4. 뒤로 가기");
+        gotoxy(55, 19); printf("4. 로그아웃");
         setColor(7);
 
         gotoxy(40, 21); printf("├──────────────────────────────────────┤");
@@ -931,7 +931,9 @@ void handleBorrow()
     for (int i = 0; i < borrowCount; i++)
     {
         if (strcmp(temp[i].borrowerPhone, currentPhone) == 0 && temp[i].state == 1)
+        {
             userBorrowCount++;
+        }
     }
 
     if (userBorrowCount >= 3)
@@ -1301,21 +1303,12 @@ void viewBorrowHistory()
     int borrowCount = manageBorrowFile(borrowList, nullborrow, 0, 0);
     int bookCount = manageBookFile(books, nullbook, 0, 0);
 
-    system("cls");
-    setColor(3);
-    drawBox(20, 1, 80, 3, "대출 내역 조회");
-    setColor(7);
-    drawBox(20, 4, 80, 25, " ID | 제목                           | 대출일      | 반납 예정일  | 상태     ");
-    gotoxy(20, 6); printf("├──────────────────────────────────────────────────────────────────────────────┤");
-
-    int a = 8;
-    int check = 0;
-
-    for (int i = 0; i < borrowCount - 1; i++) 
+    // ID 기준 오름차순 정렬
+    for (int i = 0; i < borrowCount - 1; i++)
     {
         for (int j = i + 1; j < borrowCount; j++)
         {
-            if (strcmp(borrowList[i].id, borrowList[j].id) > 0) 
+            if (strcmp(borrowList[i].id, borrowList[j].id) > 0)
             {
                 Borrow temp = borrowList[i];
                 borrowList[i] = borrowList[j];
@@ -1324,58 +1317,111 @@ void viewBorrowHistory()
         }
     }
 
+
+    Borrow userList[1000];
+
+    int count1 = 0;
     for (int i = 0; i < borrowCount; i++)
     {
         if (strcmp(borrowList[i].borrowerPhone, currentPhone) == 0)
         {
+            userList[count1++] = borrowList[i];
+        }
+    }
+
+    int startIndex = 0;
+    char title[31];
+
+    while (1)
+    {
+        system("cls");
+        setColor(3);
+        drawBox(20, 1, 80, 3, "대출 내역 조회");
+        setColor(7);
+        drawBox(20, 4, 80, 25, " ID | 제목                           | 대출일      | 반납 예정일  | 상태     ");
+        gotoxy(20, 6);
+        printf("├──────────────────────────────────────────────────────────────────────────────┤");
+
+        int check = 0;
+
+        for (int i = 0; i < 17; i++)
+        {
+            int recordIndex = startIndex + i;
+
+            if (recordIndex >= count1)
+            {
+                break; // 현재 사용자 기록 끝
+            }
+
             check = 1;
 
-            char title[31] = "(제목 없음)";
+            strcpy(title, "(제목 없음)");
+
             for (int j = 0; j < bookCount; j++)
             {
-                if (strcmp(borrowList[i].id, books[j].id) == 0)
+                if (strcmp(userList[recordIndex].id, books[j].id) == 0)
                 {
                     strcpy(title, books[j].bookTitle);
                     break;
                 }
             }
 
-            if (borrowList[i].state == 2)
+            if (userList[recordIndex].state == 2)
             {
-                setColor(12); // 연체는 빨간색
+                setColor(12); // 연체
             }
-            else if (borrowList[i].state == 1)
+            else if (userList[recordIndex].state == 1)
             {
-                setColor(10); // 정상 대출 중은 초록색
+                setColor(10); // 대출 중
             }
-            else if (borrowList[i].state == 0)
+            else if (userList[recordIndex].state == 0)
             {
-                setColor(8);
+                setColor(8);  // 반납 완료
             }
             else
             {
-                setColor(7);
-            }
+            setColor(7);
+            }   
 
-            gotoxy(22, a++);
+            gotoxy(22, 8 + i);
             printf("%-2s | %-30s | %d-%02d-%02d  | %d-%02d-%02d   | %s",
-                borrowList[i].id, title,
-                borrowList[i].borrowYear, borrowList[i].borrowMonth, borrowList[i].borrowDay,
-                borrowList[i].returnYear, borrowList[i].returnMonth, borrowList[i].returnDay,
-                borrowList[i].state == 0 ? "반납 완료" : (borrowList[i].state == 1 ? "대출 중" : "연체 중"));
+                userList[recordIndex].id, title,
+                userList[recordIndex].borrowYear, userList[recordIndex].borrowMonth, userList[recordIndex].borrowDay,
+                userList[recordIndex].returnYear, userList[recordIndex].returnMonth, userList[recordIndex].returnDay,
+                userList[recordIndex].state == 0 ? "반납 완료" : (userList[recordIndex].state == 1 ? "대출 중" : "연체 중"));
+        }
+
+        setColor(7);
+
+        if (check == 0)
+        {
+            gotoxy(22, 8);
+            printf("대출 내역이 없습니다.");
+        }
+
+        gotoxy(20, 26);  printf("├──────────────────────────────────────────────────────────────────────────────┤");
+        gotoxy(22, 27); printf("[←] 이전 페이지  [→] 다음 페이지  [0] 뒤로 가기");
+
+        char key = _getch();
+
+        if (key == 0 || key == -32) // 방향키
+        {
+            key = _getch();
+
+            if (key == LEFT && startIndex >= 17)
+            {
+                startIndex -= 17;
+            }
+            else if (key == RIGHT && startIndex + 17 < count1)
+            {
+                startIndex += 17;
+            }
+        }
+        else if (key == '0') // 뒤로 가기
+        {
+            return;
         }
     }
-
-    setColor(7);
-    if (check == 0)
-    {
-        gotoxy(22, a);
-        printf("대출 내역이 없습니다.");
-    }
-
-    gotoxy(22, a + 2);
-    printf("아무 키나 누르면 이전 화면으로 돌아갑니다...");
-    _getch();
 }
 
 /*
@@ -1598,19 +1644,12 @@ void viewBorrowRecords()
     int borrowCount = manageBorrowFile(borrowList, nullborrow, 0, 0);
     int bookCount = manageBookFile(books, nullbook, 0, 0);
 
-    system("cls");
-    setColor(3);
-    drawBox(20, 1, 80, 3, "전체 대출 내역 조회");
-    setColor(7);
-    drawBox(20, 4, 80, 25, " ID | 제목                           | 전화번호      | 반납 예정일 | 상태     ");
-    gotoxy(20, 6); printf("├──────────────────────────────────────────────────────────────────────────────┤");
-   
-    // state 기준 내림차순 정렬, 2(연체) > 1(대출 중) > 0(반납 완료) 순서로 저장하는 방식... 시험에 나왔던 것 같기도 하고
-    for (int i = 0; i < borrowCount - 1; i++) 
+    // state 기준 내림차순 정렬
+    for (int i = 0; i < borrowCount - 1; i++)
     {
-        for (int j = i + 1; j < borrowCount; j++) 
+        for (int j = i + 1; j < borrowCount; j++)
         {
-            if (borrowList[i].state < borrowList[j].state) 
+            if (borrowList[i].state < borrowList[j].state)
             {
                 Borrow temp = borrowList[i];
                 borrowList[i] = borrowList[j];
@@ -1618,54 +1657,91 @@ void viewBorrowRecords()
             }
         }
     }
-    
-    int a = 8;
-    int check = 0;
 
-    for (int i = 0; i < borrowCount; i++)
+    int startIndex = 0;
+    char titleShort[31];
+
+    while (1)
     {
-        check = 1;
+        system("cls");
+        setColor(3);
+        drawBox(20, 1, 80, 3, "전체 대출 내역 조회");
+        setColor(7);
+        drawBox(20, 4, 80, 25, " ID | 제목                           | 전화번호      | 반납 예정일 | 상태     ");
+        gotoxy(20, 6); printf("├──────────────────────────────────────────────────────────────────────────────┤");
 
-        char title[31] = "제목없음";
-        for (int j = 0; j < bookCount; j++)
+        int check = 0;
+
+        for (int i = 0; i < 17; i++)
         {
-            if (strcmp(borrowList[i].id, books[j].id) == 0)
-            {
-                strcpy(title, books[j].bookTitle); // 포인터 없이 배열에 복사
+            int recordIndex = startIndex + i;
+            if (recordIndex >= borrowCount)
                 break;
+
+            check = 1;
+
+            // 제목 찾기
+            strcpy(titleShort, "제목없음");
+            for (int j = 0; j < bookCount; j++)
+            {
+                if (strcmp(borrowList[recordIndex].id, books[j].id) == 0)
+                {
+                    strcpy(titleShort, books[j].bookTitle);
+                    break;
+                }
             }
+
+            // 상태별 색상
+            if (borrowList[recordIndex].state == 2)
+            {
+                setColor(12); // 연체
+            }
+            else if (borrowList[recordIndex].state == 1)
+            {
+                setColor(10); // 대출 중
+            }
+            else if (borrowList[recordIndex].state == 0)
+            {
+                setColor(8);  // 반납 완료
+            }
+            else
+            {
+                setColor(7);
+            }
+
+            gotoxy(22, 8 + i);
+            printf("%-2s | %-30s | %-13s | %d-%02d-%02d  | %s",
+                borrowList[recordIndex].id, titleShort, borrowList[recordIndex].borrowerPhone,
+                borrowList[recordIndex].returnYear, borrowList[recordIndex].returnMonth, borrowList[recordIndex].returnDay,
+                borrowList[recordIndex].state == 0 ? "반납 완료" : (borrowList[recordIndex].state == 1 ? "대출 중" : "연체 중"));
         }
 
-        // 상태별 색상
-        if (borrowList[i].state == 2)
-        {
-            setColor(12); // 연체
-        }
-        else if (borrowList[i].state == 1)
-        {
-            setColor(10); // 대출 중
-        }
-        else if (borrowList[i].state == 0)
-        {
-            setColor(8);  // 반납 완료
-        }
-        else
-        {
-            setColor(7);
-        }
-
-        gotoxy(22, a++);
-        printf("%-2s | %-30s | %-13s | %d-%02d-%02d  | %s",
-            borrowList[i].id, books[i].bookTitle, borrowList[i].borrowerPhone,
-            borrowList[i].returnYear, borrowList[i].returnMonth, borrowList[i].returnDay,
-            borrowList[i].state == 0 ? "반납 완료" : (borrowList[i].state == 1 ? "대출 중" : "연체 중"));
-    }
         setColor(7);
         if (check == 0)
         {
-            gotoxy(22, a); printf("대출 내역이 없습니다.");
+            gotoxy(22, 8);
+            printf("대출 내역이 없습니다.");
         }
 
-        gotoxy(22, a + 2); printf("아무 키나 누르면 이전 화면으로 돌아갑니다...");
-        _getch();
+        gotoxy(20, 26); printf("├──────────────────────────────────────────────────────────────────────────────┤");
+        gotoxy(22, 27); printf("[←] 이전 페이지  [→] 다음 페이지  [0] 뒤로 가기");
+
+        char key = _getch();
+        if (key == 0 || key == -32)  // 방향키
+        {
+            key = _getch();
+            if (key == LEFT && startIndex >= 17)
+            {
+                startIndex -= 17;
+            }
+            else if (key == RIGHT && startIndex + 17 < borrowCount)
+            {
+                startIndex += 17;
+            }
+        }
+        else if (key == '0')
+        {
+            return;
+        }
+    }
 }
